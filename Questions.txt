@@ -1,0 +1,33 @@
+Q1) Read the C#/Unity code excerpt in 'Q1 Code Excerpt.png', which describes some functionality for the scouts in Sunless Skies.
+
+Are there any improvements you would make to this code? Please take account of bugs, readability issues, potential language feature usage, and any other considerations you consider relevant.
+
+
+Q2) Unity Project1 has a scene 'SampleScene' that contains an 'Asteroid' game object in the root of its hierarchy. Asteroid has a 2D collider attached.
+
+In the same location, there is another game object named 'Manager'. Manager has a 'Plotter' behaviour attached with three buttons:
+
+- Plot Points;
+- Plot Buffer;
+- Clear.
+
+Manager also exposes two prefab references, 'PointPrefab' and 'BufferPrefab', and a float called 'BufferDistance'. In the MonoBehaviour script 'Assets/Plotter.cs' there are three corresponding function stubs.
+
+Please implement these stubs as follows:
+
+a) PlotPoints():  instantiate PointPrefab at intervals along the Asteroid's perimeter. 
+
+b) PlotBuffer():  instantiate a similar number of BufferPrefab at a distance of BufferDistance outside the Asteroid's perimeter.
+
+c) Clear(): remove all instantiated prefabs.
+
+The number of prefabs instantiated should be enough to form a clear outline around the Asteroid, but beyond that, the exact number isn't important.
+
+Also, it's acceptable if the processes produce some outliers; a sensible proof of concept will be sufficient.
+
+
+Q3) Explain the difference between static classes and Singletons.
+
+Discuss where and why you might see them in Unity or other projects.
+
+Describe how you might make use of the Singleton pattern without the use of static classes.
