@@ -1,0 +1,24 @@
+Unity Project1 has a scene 'SampleScene' that contains an 'Asteroid' gameObject in the root of its hierarchy.
+Asteroid has a 2D Collider attached.
+
+Also in the root of the scene, there is a gameObject named 'Manager'.
+Manager has a 'Plotter' behaviour attached with three buttons:
+
+-Plot Points
+-Plot Buffer
+-Clear 
+
+Manager also exposes two prefab references, 'PointPrefab' and 'BufferPrefab', and a float 'BufferDistance'.
+
+In the MonoBehaviour script 'Assets/Plotter.cs' there are 3 corresponding function stubs.
+
+The task is to implement the stubs as follows:
+
+	PlotPoints():  instantiate PointPrefab at intervals along the Asteroid's perimeter. 
+	PlotBuffer():  instantiate BufferPrefab at intervals along and a distance of BufferDistance outside the Asteroid's perimeter.
+	Clear(): remove all instantiated prefabs.
+
+
+The number of prefabs instantiated is not important - enough so the outline around the Asteroid is clear.
+It is not a problem if the processes produce some outliers, the objective is to show a sensible proof of concept.
+

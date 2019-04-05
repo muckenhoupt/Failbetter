@@ -3,7 +3,7 @@ Q1) Read the C#/Unity code excerpt in 'Q1 Code Excerpt.png', which describes som
 Are there any improvements you would make to this code? Please take account of bugs, readability issues, potential language feature usage, and any other considerations you consider relevant.
 
 
-Q2) Unity Project1 has a scene 'SampleScene' that contains an 'Asteroid' game object in the root of its hierarchy. Asteroid has a 2D collider attached.
+Q2) Unity project Q2 Materials has a scene 'SampleScene' that contains an 'Asteroid' game object in the root of its hierarchy. Asteroid has a 2D collider attached.
 
 In the same location, there is another game object named 'Manager'. Manager has a 'Plotter' behaviour attached with three buttons:
 
@@ -30,4 +30,4 @@ Q3) Explain the difference between static classes and Singletons.
 
 Discuss where and why you might see them in Unity or other projects.
 
-Describe how you might make use of the Singleton pattern without the use of static classes.
+Describe how you might make use of the Singleton pattern without the use of static classes, in a Unity or other type of software project.
