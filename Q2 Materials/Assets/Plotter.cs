@@ -7,11 +7,12 @@ public class Plotter : MonoBehaviour
     public PolygonCollider2D Collider;
     public float BufferDistance = 40;
 
-    public float pointSeparation = 8f;
+    public float MarkerDistance = 8f;
 
 
     private void Plot(Vector3 point, GameObject prefab) {
-        Instantiate(prefab, point, Quaternion.identity);
+        GameObject o = Instantiate(prefab, point, Quaternion.identity);
+        o.tag = "Marker";
     }
 
     public void Clear()
@@ -20,23 +21,7 @@ public class Plotter : MonoBehaviour
         int count = 0;
 
         foreach(GameObject o in FindObjectsOfType<GameObject>()) {
-
-            // OK, this is kind of silly.
-            //
-            // My first thought was to use PrefabUtility.GetPrefabInstanceStatus
-            // to filter for prefab instances.
-            // But it turns out that things created via Instantiate() aren't
-            // flagged as prefab instances, even in editor mode.
-            //
-            // My second thought was to use tags. But it wasn't clear from the
-            // instructions if I was allowed to modify the prefabs, and besides,
-            // the spec says to "remove all instantiated prefabs", not just
-            // instances of the two prefabs given.
-            // 
-            // This is the only reliable way I have found to identify all prefab
-            // instances created via script.
-
-            if (o.name.Contains("(Clone)")) {
+            if (o.tag == "Marker") {
                 Object.DestroyImmediate(o);
                 count++;
             }
@@ -44,21 +29,31 @@ public class Plotter : MonoBehaviour
         Debug.Log("Cleared "+count+" objects");
     }
 
+    // Given two points on the perimeter, try to fill the space between them with
+    // instances of PointPrefab, spaced no more than MarkerDistance apart.
     private void FillPoints(Vector2 pointA, Vector2 pointB, Collider2D asteroid) {
         Vector2 atob = (pointB - pointA).normalized;
         Vector2 normal = new Vector2(-atob.y, atob.x);
 
-        float minSeparation = pointSeparation / 2;
+        float minSeparation = MarkerDistance / 2;
 
         Vector2 lastPoint = pointA;
         while (Vector2.Distance(lastPoint, pointB) > minSeparation) {
+
+            // Take a step towards point B
             Vector2 raySource = lastPoint + (atob * minSeparation);
+
+            // Step outward if we're on the collider
             while (asteroid.OverlapPoint(raySource))
                 raySource += normal;
+
             RaycastHit2D hit = Physics2D.Raycast(raySource, -normal);
 
             Plot(hit.point, PointPrefab);
-            if (Vector2.Distance(lastPoint, hit.point) > pointSeparation) {
+
+            // If the curvature here is not flat, we may need to recursively
+            // fill the space between thie point and the last one.
+            if (Vector2.Distance(lastPoint, hit.point) > MarkerDistance) {
                 FillPoints(lastPoint, hit.point, asteroid);
             }
             lastPoint = hit.point;
@@ -75,10 +70,10 @@ public class Plotter : MonoBehaviour
         float radius = b.max.x + b.max.y;
 
 
-        int nPoints = 8;
+        int nPoints = 20;
 
         // Cast rays inward from a circle around the object.
-        // If this leaves too large a gap, fill in with more points.    
+        // Fill in the gaps with more points.    
         float dtheta = 2f * Mathf.PI / nPoints;
         Vector2 firstPoint = Vector2.zero;
         Vector2 lastPoint = Vector2.zero;
@@ -87,8 +82,8 @@ public class Plotter : MonoBehaviour
             Vector2 rayDirection = new Vector2(Mathf.Cos(theta), -Mathf.Sin(theta));
             Vector2 raySource = rayDirection * -radius + center;
             RaycastHit2D hit = Physics2D.Raycast(raySource, rayDirection);
-            if (hit)
-                Plot(hit.point, PointPrefab);
+            if (!hit) continue; 
+            Plot(hit.point, PointPrefab);
             if (i == 0) {
                 firstPoint = hit.point;
             } else {
@@ -101,11 +96,15 @@ public class Plotter : MonoBehaviour
 
     }
 
+    // FillBuffer and PlotBuffer are much like FillPoints and PlotPoints,
+    // except that they use CircleCast instead of Raycast, to find points
+    // exactly BufferDistance away from the collider.
+
     private void FillBuffer(Vector2 pointA, Vector2 pointB, Collider2D asteroid) {
         Vector2 atob = (pointB - pointA).normalized;
         Vector2 normal = new Vector2(-atob.y, atob.x);
 
-        float minSeparation = pointSeparation / 2;
+        float minSeparation = MarkerDistance / 2;
 
         Vector2 lastPoint = pointA;
         while (Vector2.Distance(lastPoint, pointB) > minSeparation) {
@@ -117,9 +116,6 @@ public class Plotter : MonoBehaviour
             }
 
             Plot(hit.centroid, BufferPrefab);
-            if (Vector2.Distance(lastPoint, hit.centroid) > pointSeparation) {
-                //FillBuffer(lastPoint, hit.centroid, asteroid);
-            }
             lastPoint = hit.centroid;
         }
     }
@@ -133,7 +129,7 @@ public class Plotter : MonoBehaviour
         Vector2 center = new Vector2(b.center.x, b.center.y);
         float radius = b.max.x + b.max.y + BufferDistance;
 
-        int nPoints = 8;
+        int nPoints = 20;
 
         // Cast rays inward from a circle around the object.
         // If this leaves too large a gap, fill in with more points.    
@@ -147,8 +143,8 @@ public class Plotter : MonoBehaviour
             Vector2 rayDirection = new Vector2(Mathf.Cos(theta), -Mathf.Sin(theta));
             Vector2 raySource = rayDirection * -radius + center;
             RaycastHit2D hit = Physics2D.CircleCast(raySource, BufferDistance, rayDirection);
-            if (hit)
-                Plot(hit.centroid, BufferPrefab);
+            if (!hit) continue; 
+            Plot(hit.centroid, BufferPrefab);
             if (i == 0) {
                 firstPoint = hit.centroid;
             } else {
