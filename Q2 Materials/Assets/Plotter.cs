@@ -7,7 +7,7 @@ public class Plotter : MonoBehaviour
     public PolygonCollider2D Collider;
     public float BufferDistance = 40;
 
-    public float MarkerDistance = 8f;
+    public float MarkerDistance = 10f;
 
 
     private void Plot(Vector3 point, GameObject prefab) {
@@ -49,10 +49,16 @@ public class Plotter : MonoBehaviour
 
             RaycastHit2D hit = Physics2D.Raycast(raySource, -normal);
 
+            if (!hit) {
+                print("Warning: Missed collider while trying to plot points");
+                return;
+            }
+
             Plot(hit.point, PointPrefab);
 
-            // If the curvature here is not flat, we may need to recursively
-            // fill the space between thie point and the last one.
+            // The curvature of the collider can cause the points plotted this
+            // way to be too far apart. If they are, fill in the space between
+            // them recursively.
             if (Vector2.Distance(lastPoint, hit.point) > MarkerDistance) {
                 FillPoints(lastPoint, hit.point, asteroid);
             }
@@ -73,7 +79,7 @@ public class Plotter : MonoBehaviour
         int nPoints = 20;
 
         // Cast rays inward from a circle around the object.
-        // Fill in the gaps with more points.    
+        // Fill in the space between the points found this way with more points.    
         float dtheta = 2f * Mathf.PI / nPoints;
         Vector2 firstPoint = Vector2.zero;
         Vector2 lastPoint = Vector2.zero;
@@ -83,6 +89,7 @@ public class Plotter : MonoBehaviour
             Vector2 raySource = rayDirection * -radius + center;
             RaycastHit2D hit = Physics2D.Raycast(raySource, rayDirection);
             if (!hit) continue; 
+
             Plot(hit.point, PointPrefab);
             if (i == 0) {
                 firstPoint = hit.point;
@@ -110,6 +117,12 @@ public class Plotter : MonoBehaviour
         while (Vector2.Distance(lastPoint, pointB) > minSeparation) {
             Vector2 raySource = lastPoint + (atob * minSeparation);
             RaycastHit2D hit = Physics2D.CircleCast(raySource, BufferDistance, -normal);
+
+            if (!hit) {
+                print("Warning: Missed collider while trying to plot buffer");
+                return;
+            }
+
             while (hit.centroid == raySource) {
                 raySource += (normal * BufferDistance);
                 hit = Physics2D.CircleCast(raySource, BufferDistance, -normal);
@@ -117,6 +130,9 @@ public class Plotter : MonoBehaviour
 
             Plot(hit.centroid, BufferPrefab);
             lastPoint = hit.centroid;
+
+            // Unlike FillPoints, I'm finding that the the smoothing effect of the
+            // buffer distance makes recursive filling unnecessary.
         }
     }
 
@@ -132,7 +148,7 @@ public class Plotter : MonoBehaviour
         int nPoints = 20;
 
         // Cast rays inward from a circle around the object.
-        // If this leaves too large a gap, fill in with more points.    
+        // Fill in the space between the points found this way with more points.    
         float dtheta = 2f * Mathf.PI / nPoints;
         Vector2 firstPoint = Vector2.zero;
         Vector2 lastPoint = Vector2.zero;
